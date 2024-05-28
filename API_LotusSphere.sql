@@ -1,7 +1,7 @@
 -- Creación de la base de datos llamada EnigmaText
-CREATE DATABASE IF NOT EXISTS API_LotusSphere;
+CREATE DATABASE IF NOT EXISTS red_social;
 -- Usar esta base de datos
-USE API_LotusSphere;
+USE red_social;
 
 -- TABLAS
 

@@ -1,4 +1,4 @@
-const { obtenerConexion } = require('../database/conexion');
+const { obtenerConexion } = require('../datebase/conexion');
 
 async function registrarUsuario(nombre, email, password_hash) {
     try {
