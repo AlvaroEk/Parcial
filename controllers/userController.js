@@ -1,4 +1,4 @@
-const userModel = require('../models/userModel'); // Crea una constante llamada Usuario que recibe funciones de mis modelos
+const userModel = require('../models/userModel');
 const authMiddleWare = require('../middlewares/authMiddleware');
 
 async function registrarUsuario(dataSegura) {

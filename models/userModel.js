@@ -2,16 +2,10 @@ const { obtenerConexion } = require('../datebase/conexion');
 
 async function registrarUsuario(nombre, email, password_hash) {
     try {
-        // Establecer conexión a la base de datos
         const conexion = await obtenerConexion();
-
-        // Ejecutar la consulta SQL para insertar el usuario
         await conexion.query('INSERT INTO usuarios (nombre, email, contraseña) VALUES (?, ?, ?)', [nombre, email, password_hash]);
-
-        // Registrar el usuario correctamente
         console.log('Usuario insertado correctamente');
     } catch (error) {
-        // Manejar cualquier error que ocurra durante el registro
         console.error('Error al insertar usuario:', error);
         throw error;
     }
@@ -20,15 +14,16 @@ async function registrarUsuario(nombre, email, password_hash) {
 async function verificarUsuarioExistente(email) {
     try {
         const conexion = await obtenerConexion();
+        console.log('Consultando usuario con email:', email);
         const [results] = await conexion.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+        console.log('Resultados de la consulta:', results);
         return results[0];
     } catch (error) {
-        console.error('Error al obtener usuario por email y contraseña:', error);
+        console.error('Error al obtener usuario por email:', error);
         throw error;
     }
 }
 
-// Función para obtener un usuario por su ID
 async function obtenerPorId(id) {
     const conexion = await obtenerConexion();
     try {

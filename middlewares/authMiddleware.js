@@ -1,100 +1,38 @@
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-const crypto = require('crypto');
+async function registrarUsuario(dataSegura) {
+    console.log('dataSegura = ', dataSegura);
+    console.log('dataSegura nombre, email, passwordHash = ', dataSegura.nombre, dataSegura.email, dataSegura.passwordHash);
+    try {
+        // Descifrar los datos seguros recibidos de la aplicación web
+        const nombre = authMiddleWare.decryptData(dataSegura.nombre);
+        const email = authMiddleWare.decryptData(dataSegura.email);
+        const password_hash = authMiddleWare.decryptData(dataSegura.passwordHash);
 
-dotenv.config();
-
-async function validarDatosRegistro(dataSegura) {
-    const errores = [];
-
-    if (!dataSegura.nombre || typeof dataSegura.nombre !== 'string') {
-        errores.push('El nombre es requerido y debe ser una cadena de caracteres.');
+        // Registrar al usuario en la base de datos utilizando el modelo
+        await userModel.registrarUsuario(nombre, email, password_hash);
+    } catch (error) {
+        // Manejar cualquier error que ocurra
+        console.error('Error al registrar usuario en la API:', error);
+        throw error;
     }
+}
 
-    if (!dataSegura.email || typeof dataSegura.email !== 'string') {
-        errores.push('El email es requerido y debe ser una cadena de caracteres.');
-    }
-
-    if (!dataSegura.contraseña || typeof dataSegura.contraseña !== 'string') {
-        errores.push('La contraseña es requerida y debe ser una cadena de caracteres.');
-    } else {
-        // Verifica si la contraseña cumple con ciertos criterios de seguridad
-        const longitudMinima = 8;
-        if (dataSegura.contraseña.length < longitudMinima) {
-            errores.push(`La contraseña debe tener al menos ${longitudMinima} caracteres.`);
+async function verificarRegistro(email) {
+    try {
+        console.log('email', email)
+        const usuarioExistente = await userModel.verificarUsuarioExistente(email);
+        console.log('email y usuarioExistente', email, usuarioExistente);
+        if (usuarioExistente) {
+            return { status: 400, message: 'El usuario ya está registrado' };
         }
-
-        // También podrías verificar otros criterios, como la presencia de caracteres especiales, números, etc.
+        return { status: 200, message: 'El usuario no está registrado' };
+    } catch (error) {
+        console.error('Error al verificar registro:', error);
+        return { status: 500, message: 'Error interno del servidor' };
     }
-
-    // Devuelve un objeto con el resultado de la validación
-    return {
-        valido: errores.length === 0,
-        errores: errores
-    };
-}
-
-function verificarToken(req, res, next) {  // aun no aplicado
-    const token = req.headers['authorization'];
-
-    if (!token) {
-        return res.status(401).json({ mensaje: 'Acceso denegado. Token no proporcionado.' });
-    }
-
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, usuario) => {
-        if (err) {
-            return res.status(403).json({ mensaje: 'Token inválido.' });
-        }
-        req.usuario = usuario;
-        next();
-    });
-}
-
-// Función para generar un token JWT
-function generateToken(data, expirationTime) {
-    // Se firma el token utilizando el algoritmo RS256 y la clave privada RSA del entorno
-    return jwt.sign({ data }, process.env.RSA_PRIVATE_KEY, { algorithm: 'RS256', expiresIn: expirationTime });
-}
-
-function decryptData(dataSegura) {
-    // Obtén la clave y el IV de tu entorno (probablemente de tu archivo .env)
-    const key = Buffer.from(process.env.AES_KEY, 'hex');
-    const iv = Buffer.from(process.env.AES_IV, 'hex');
-
-    console.log('encryptedData = ', dataSegura);
-
-    console.log('key = ', key);
-    console.log('iv = ', iv);
-    // Verifica que la longitud de la clave y el IV sean correctas
-    if (key.length !== 32) {
-        throw new Error('La clave debe ser de 32 bytes (256 bits)');
-    }
-    if (iv.length !== 16) {
-        throw new Error('El vector de inicialización (IV) debe ser de 16 bytes (128 bits)');
-    }
-
-    // Separar el texto cifrado, el IV y la AuthTag de encryptedData
-    const parts = dataSegura.split(':');
-    const encryptedText = parts.pop();
-    const authTag = Buffer.from(parts.pop(), 'hex');
-
-    // Crea un descifrador usando el algoritmo AES-256-GCM y la clave y el IV proporcionados
-    const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-    decipher.setAuthTag(authTag);
-
-    // Decifra los datos y conviértelos de hexadecimal a UTF-8
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-
-    return decrypted;
 }
 
 
-
-// Exporta la función de validación de datos de registro
 module.exports = {
-    validarDatosRegistro,
-    verificarToken,
-    generateToken,
-    decryptData
+    registrarUsuario,
+    verificarRegistro
 };
