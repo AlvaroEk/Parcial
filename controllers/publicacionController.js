@@ -1,4 +1,18 @@
 const publicacionService = require('../servicio/publicacionServicio');
+const multer = require('multer');
+const path = require('path');
+
+// Configuración de multer para guardar archivos
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
 
 const obtenerTodas = (req, res) => {
     console.log("Recibiendo solicitud para obtener todas las publicaciones");
@@ -13,21 +27,37 @@ const obtenerTodas = (req, res) => {
 };
 
 const crearPublicacion = (req, res) => {
-    const { usuario_id, tipo, contenido } = req.body;
-    console.log("Datos recibidos para crear publicación:", req.body);
-    publicacionService.crearPublicacion({ usuario_id, tipo, contenido }, (err, result) => {
+    upload.fields([{ name: 'imagen', maxCount: 1 }, { name: 'video', maxCount: 1 }])(req, res, (err) => {
         if (err) {
-            console.error("Error al crear publicación:", err);
-            return res.status(500).json({ error: "Error al crear publicación" });
+            return res.status(500).json({ error: err.message });
         }
-        console.log("Publicación creada correctamente:", result);
-        res.status(201).json(result);
+
+        const { usuario_id, tipo, contenido } = req.body;
+        let imagen = null;
+        let video = null;
+
+        if (req.files['imagen']) {
+            imagen = req.files['imagen'][0].path;
+        }
+
+        if (req.files['video']) {
+            video = req.files['video'][0].path;
+        }
+
+        publicacionService.crearPublicacion({ usuario_id, tipo, contenido, imagen, video }, (err, result) => {
+            if (err) {
+                console.error("Error al crear publicación:", err);
+                return res.status(500).json({ error: "Error al crear publicación" });
+            }
+            console.log("Publicación creada correctamente:", result);
+            res.status(201).json(result);
+        });
     });
 };
 
 const agregarLike = (req, res) => {
     const { id } = req.params;
-    const { usuario_id } = req.body; // Suponiendo que el ID del usuario se pasa en el cuerpo de la solicitud
+    const { usuario_id } = req.body;
     publicacionService.agregarLike(id, usuario_id, (err, result) => {
         if (err) {
             console.error("Error al agregar like:", err);
