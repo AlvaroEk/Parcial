@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userController');
+const userControllers = require('../controllers/userController');
 
 router.post('/', async (req, res) => {
     const dataSegura = req.body.dataSegura;
     console.log('datasegura = ', dataSegura);
   
     try {
-      const resultado = await userController.registrarUsuario(dataSegura);
+      const resultado = await userControllers.registrarUsuario(dataSegura);
       console.log('registro = ', resultado);
       console.log('dataSegura = ', dataSegura);
       res.status(201).json({ mensaje: 'Registro exitoso', data: resultado });
@@ -17,3 +17,4 @@ router.post('/', async (req, res) => {
   });
   
   module.exports = router;
+  ;

@@ -1,38 +1,32 @@
-async function registrarUsuario(dataSegura) {
-    console.log('dataSegura = ', dataSegura);
-    console.log('dataSegura nombre, email, passwordHash = ', dataSegura.nombre, dataSegura.email, dataSegura.passwordHash);
-    try {
-        // Descifrar los datos seguros recibidos de la aplicación web
-        const nombre = authMiddleWare.decryptData(dataSegura.nombre);
-        const email = authMiddleWare.decryptData(dataSegura.email);
-        const password_hash = authMiddleWare.decryptData(dataSegura.passwordHash);
+const crypto = require('crypto');
+const dotenv = require('dotenv');
 
-        // Registrar al usuario en la base de datos utilizando el modelo
-        await userModel.registrarUsuario(nombre, email, password_hash);
-    } catch (error) {
-        // Manejar cualquier error que ocurra
-        console.error('Error al registrar usuario en la API:', error);
-        throw error;
-    }
+dotenv.config();
+
+function decryptData(data) {
+  const key = Buffer.from(process.env.AES_KEY, 'hex');
+  const iv = Buffer.from(process.env.AES_IV, 'hex');
+
+  if (key.length !== 32) {
+    throw new Error('La clave debe ser de 32 bytes (256 bits)');
+  }
+  if (iv.length !== 16) {
+    throw new Error('El vector de inicialización (IV) debe ser de 16 bytes (128 bits)');
+  }
+
+  const parts = data.split(':');
+  const encryptedText = parts.pop();
+  const authTag = Buffer.from(parts.pop(), 'hex');
+
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(authTag);
+
+  let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+
+  return decrypted;
 }
-
-async function verificarRegistro(email) {
-    try {
-        console.log('email', email)
-        const usuarioExistente = await userModel.verificarUsuarioExistente(email);
-        console.log('email y usuarioExistente', email, usuarioExistente);
-        if (usuarioExistente) {
-            return { status: 400, message: 'El usuario ya está registrado' };
-        }
-        return { status: 200, message: 'El usuario no está registrado' };
-    } catch (error) {
-        console.error('Error al verificar registro:', error);
-        return { status: 500, message: 'Error interno del servidor' };
-    }
-}
-
 
 module.exports = {
-    registrarUsuario,
-    verificarRegistro
+  decryptData,
 };

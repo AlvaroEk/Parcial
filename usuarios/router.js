@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-
-
-// Rutas para el controlador
-
+const publicacionController = require('../controllers/publicacionController');
+const perfilController = require('../controllers/perfilController');
 const index = require('./index');
 const login = require('./login');
 const registrar = require('./registrar');
@@ -13,6 +11,11 @@ router.use('/', index);
 router.use('/login', login);
 router.use('/registrar', registrar);
 router.use('/authenticate', authenticate);
+router.get('/publicaciones', publicacionController.obtenerTodas);
+router.post('/publicaciones', publicacionController.crearPublicacion);
+router.post('/publicaciones/:id/like', publicacionController.agregarLike);
+router.post('/publicaciones/:id/comentar', publicacionController.agregarComentario);
 
-
+// Ruta para actualizar el perfil de un usuario
+router.put('/perfil', perfilController.actualizarPerfil);
 module.exports = router;
