@@ -3,6 +3,7 @@ const app = express();
 const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config(); // Asegúrate de que las variables de entorno se carguen
+const chatRoutes = require('./usuarios/chatRoutes.js');
 
 const perfilRouter = require('./usuarios/perfil.js');
 const multer = require('multer');
@@ -15,6 +16,8 @@ app.set('views', path.join(__dirname, 'views'));
 // Middleware para parsear el cuerpo de las solicitudes
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use('/api', chatRoutes);
 
 const router = require('./usuarios/router.js');
 

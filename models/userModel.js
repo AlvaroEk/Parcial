@@ -1,42 +1,32 @@
 const { obtenerConexion } = require('../datebase/conexion');
 
-async function registrarUsuario(nombre, email, password_hash) {
-    try {
-        const conexion = await obtenerConexion();
-        await conexion.query('INSERT INTO usuarios (nombre, email, contraseña) VALUES (?, ?, ?)', [nombre, email, password_hash]);
-        console.log('Usuario insertado correctamente');
-    } catch (error) {
-        console.error('Error al insertar usuario:', error);
-        throw error;
-    }
-}
-
-async function verificarUsuarioExistente(email) {
-    try {
-        const conexion = await obtenerConexion();
-        console.log('Consultando usuario con email:', email);
-        const [results] = await conexion.query('SELECT * FROM usuarios WHERE email = ?', [email]);
-        console.log('Resultados de la consulta:', results);
-        return results[0];
-    } catch (error) {
-        console.error('Error al obtener usuario por email:', error);
-        throw error;
-    }
-}
-
-async function obtenerPorId(id) {
+async function registrar(nombre, email, password) {
     const conexion = await obtenerConexion();
     try {
-        const [results] = await conexion.query('SELECT * FROM usuarios WHERE id = ?', [id]);
+        await conexion.query('INSERT INTO usuarios (nombre, email, contraseña) VALUES (?, ?, ?)', [nombre, email, password]);
+        console.log('Usuario insertado correctamente');
+    } catch (error) {
+        console.error('Error al insertar usuario en el modelo:', error);
+        throw error;
+    } finally {
+        conexion.release(); // Liberar la conexión al finalizar
+    }
+}
+
+async function obtenerPorNombre(nombre) {
+    const conexion = await obtenerConexion();
+    try {
+        const [results] = await conexion.query('SELECT * FROM usuarios WHERE nombre = ?', [nombre]);
         return results[0];
     } catch (error) {
-        console.error('Error al obtener usuario por ID:', error);
+        console.error('Error al obtener usuario por nombre en el modelo:', error);
         throw error;
+    } finally {
+        conexion.release(); // Liberar la conexión al finalizar
     }
 }
 
 module.exports = {
-    registrarUsuario,
-    verificarUsuarioExistente,
-    obtenerPorId,
+    registrar,
+    obtenerPorNombre
 };

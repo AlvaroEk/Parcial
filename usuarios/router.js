@@ -3,12 +3,10 @@ const router = express.Router();
 const publicacionController = require('../controllers/publicacionController');
 const perfilController = require('../controllers/perfilController');
 const index = require('./index');
-const login = require('./login');
 const registrar = require('./registrar');
 const authenticate = require('./authenticate');
 
 router.use('/', index);
-router.use('/login', login);
 router.use('/registrar', registrar);
 router.use('/authenticate', authenticate);
 router.get('/publicaciones', publicacionController.obtenerTodas);
