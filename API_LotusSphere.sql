@@ -9,6 +9,7 @@ USE red_social;
 CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
+    usuario VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL,
     contraseña VARCHAR(255) NOT NULL
 );
@@ -86,4 +87,6 @@ SELECT * FROM conversaciones;
 SELECT * FROM mensajes_chat;
 SELECT * FROM participantes;
 
+
+DROP DATABASE red_social;
 

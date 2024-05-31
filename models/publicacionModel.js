@@ -1,66 +1,45 @@
 const { obtenerConexion } = require('../datebase/conexion');
 
-const obtenerTodas = async (callback) => {
-    let conexion;
+// Obtener todas las publicaciones
+async function getAll() {
+    const conexion = await obtenerConexion();
     try {
-        conexion = await obtenerConexion();
-        const [results] = await conexion.query(`
-            SELECT p.*, COUNT(c.id) AS comentarios, IFNULL(l.likes, 0) AS likes 
-            FROM publicaciones p 
-            LEFT JOIN comentarios c ON p.id = c.publicacion_id 
-            LEFT JOIN (SELECT publicacion_id, COUNT(*) AS likes FROM likes GROUP BY publicacion_id) l 
-            ON p.id = l.publicacion_id 
-            GROUP BY p.id
-        `);
-        callback(null, results);
-    } catch (err) {
-        console.error("Error al obtener publicaciones en el modelo:", err);
-        callback(err);
+        const [results] = await conexion.query('SELECT * FROM publicaciones');
+        return results;
+    } catch (error) {
+        console.error('Error al seleccionar publicaciones', error);
+        throw error;
     } finally {
-        if (conexion) conexion.release();
+        conexion.release();
     }
-};
+}
 
-const crearPublicacion = async (publicacion, callback) => {
-    let conexion;
+// Crear una nueva publicación
+async function crearPublicacion(usuario_id, titulo, contenido, tipo, imagen, video) {
+    const conexion = await obtenerConexion();
     try {
-        conexion = await obtenerConexion();
-        const [result] = await conexion.query('INSERT INTO publicaciones SET ?', publicacion);
-        callback(null, result);
-    } catch (err) {
-        console.error("Error al crear publicación en el modelo:", err);
-        callback(err);
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
+        const [rows] = await conexion.query(
+            'SELECT * FROM publicaciones WHERE usuario_id = ? AND titulo = ?',
+            [usuario_id, titulo]
+        );
 
-const agregarLike = async (id, usuario_id, callback) => {
-    let conexion;
-    try {
-        conexion = await obtenerConexion();
-        const [result] = await conexion.query('INSERT INTO likes (publicacion_id, usuario_id) VALUES (?, ?)', [id, usuario_id]);
-        callback(null, result);
-    } catch (err) {
-        console.error("Error al agregar like en el modelo:", err);
-        callback(err);
+        if (rows.length > 0) {
+            throw new Error('La publicación ya existe.');
+        } else {
+            await conexion.query(
+                'INSERT INTO publicaciones (usuario_id, titulo, contenido, tipo, imagen, video) VALUES (?, ?, ?, ?, ?, ?)',
+                [usuario_id, titulo, contenido, tipo, imagen, video]
+            );
+        }
+    } catch (error) {
+        console.error('Error al crear la publicación:', error);
+        throw error;
     } finally {
-        if (conexion) conexion.release();
+        conexion.release();
     }
-};
+}
 
-const agregarComentario = async (comentario, callback) => {
-    let conexion;
-    try {
-        conexion = await obtenerConexion();
-        const [result] = await conexion.query('INSERT INTO comentarios SET ?', comentario);
-        callback(null, result);
-    } catch (err) {
-        console.error("Error al agregar comentario en el modelo:", err);
-        callback(err);
-    } finally {
-        if (conexion) conexion.release();
-    }
+module.exports = {
+    getAll,
+    crearPublicacion
 };
-
-module.exports = { obtenerTodas, crearPublicacion, agregarLike, agregarComentario };

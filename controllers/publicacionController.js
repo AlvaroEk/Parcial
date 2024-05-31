@@ -1,81 +1,35 @@
-const publicacionService = require('../servicio/publicacionServicio');
-const multer = require('multer');
-const path = require('path');
+const PublicacionServicio = require('../servicio/publicacionServicio');
 
-// Configuración de multer para guardar archivos
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+// Obtener todas las publicaciones
+async function getPublicacionesPublicas(req, res) {
+    try {
+        const publicaciones = await PublicacionServicio.getPublicaciones();
+        const usuarioId = req.isAuthenticated() ? req.user.id : null;
+
+        res.render('publicacion', { publicaciones: publicaciones, usuarioId: usuarioId });
+    } catch (error) {
+        console.error('Error al obtener publicaciones:', error);
+        res.status(500).send('Error al obtener publicaciones');
     }
-});
+}
 
-const upload = multer({ storage: storage });
-
-const obtenerTodas = (req, res) => {
-    console.log("Recibiendo solicitud para obtener todas las publicaciones");
-    publicacionService.obtenerTodas((err, publicaciones) => {
-        if (err) {
-            console.error("Error al obtener publicaciones:", err);
-            return res.status(500).json({ error: "Error al obtener publicaciones" });
+// Crear una nueva publicación
+async function crearPublicacion(req, res) {
+    const { usuario_id, titulo, contenido, tipo, imagen, video } = req.body;
+    try {
+        await PublicacionServicio.crearPublicacion(usuario_id, titulo, contenido, tipo, imagen, video);
+        res.redirect('/publicacion');
+    } catch (error) {
+        console.error('Error al crear publicación:', error);
+        if (error.message === 'La publicación ya existe.') {
+            res.status(400).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Error al crear publicación' });
         }
-        console.log("Publicaciones obtenidas correctamente:", publicaciones);
-        res.json(publicaciones);
-    });
+    }
+}
+
+module.exports = {
+    getPublicacionesPublicas,
+    crearPublicacion
 };
-
-const crearPublicacion = (req, res) => {
-    upload.fields([{ name: 'imagen', maxCount: 1 }, { name: 'video', maxCount: 1 }])(req, res, (err) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-
-        const { usuario_id, tipo, contenido } = req.body;
-        let imagen = null;
-        let video = null;
-
-        if (req.files['imagen']) {
-            imagen = req.files['imagen'][0].path;
-        }
-
-        if (req.files['video']) {
-            video = req.files['video'][0].path;
-        }
-
-        publicacionService.crearPublicacion({ usuario_id, tipo, contenido, imagen, video }, (err, result) => {
-            if (err) {
-                console.error("Error al crear publicación:", err);
-                return res.status(500).json({ error: "Error al crear publicación" });
-            }
-            console.log("Publicación creada correctamente:", result);
-            res.status(201).json(result);
-        });
-    });
-};
-
-const agregarLike = (req, res) => {
-    const { id } = req.params;
-    const { usuario_id } = req.body;
-    publicacionService.agregarLike(id, usuario_id, (err, result) => {
-        if (err) {
-            console.error("Error al agregar like:", err);
-            return res.status(500).json({ error: "Error al agregar like" });
-        }
-        res.status(200).json(result);
-    });
-};
-
-const agregarComentario = (req, res) => {
-    const { publicacion_id, usuario_id, comentario } = req.body;
-    publicacionService.agregarComentario({ publicacion_id, usuario_id, comentario }, (err, result) => {
-        if (err) {
-            console.error("Error al agregar comentario:", err);
-            return res.status(500).json({ error: "Error al agregar comentario" });
-        }
-        res.status(201).json(result);
-    });
-};
-
-module.exports = { obtenerTodas, crearPublicacion, agregarLike, agregarComentario };
