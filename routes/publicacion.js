@@ -2,9 +2,7 @@ const express = require('express');
 const router = express.Router();
 const publicacionController = require('../controllers/publicacionController');
 
-// Rutas
-router.post('/crearNuevo', publicacionController.crearPublicacion); // Crear una nueva publicación
-router.get('/publicacionesPublicas', publicacionController.getPublicacionesPublicas); // Obtener todas las publicaciones públicas
-router.get('/publicaciones', publicacionController.getPublicaciones); // Obtener todas las publicaciones
+router.get('/', publicacionController.getPublicaciones);
+router.post('/', publicacionController.crearPublicacion);
 
 module.exports = router;

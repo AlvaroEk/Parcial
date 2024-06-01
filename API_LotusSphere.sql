@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS participantes (
 
 -- Consultas de prueba para verificar la estructura de las tablas nuevas
 SELECT * FROM usuarios;
+SELECT * FROM publicaciones;
 SELECT * FROM conversaciones;
 SELECT * FROM mensajes_chat;
 SELECT * FROM participantes;

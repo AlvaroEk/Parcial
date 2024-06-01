@@ -1,6 +1,5 @@
 const { obtenerConexion } = require('../datebase/conexion');
 
-// Obtener todas las publicaciones
 async function getAll() {
     const conexion = await obtenerConexion();
     try {
@@ -15,22 +14,13 @@ async function getAll() {
 }
 
 // Crear una nueva publicación
-async function crearPublicacion(usuario_id, titulo, contenido, tipo, imagen, video) {
+async function crearPublicacion(usuario_id, contenido, tipo, imagen, video) {
     const conexion = await obtenerConexion();
     try {
-        const [rows] = await conexion.query(
-            'SELECT * FROM publicaciones WHERE usuario_id = ? AND titulo = ?',
-            [usuario_id, titulo]
+        await conexion.query(
+            'INSERT INTO publicaciones (usuario_id, contenido, tipo, imagen, video) VALUES (?, ?, ?, ?, ?)',
+            [usuario_id, contenido, tipo, imagen, video]
         );
-
-        if (rows.length > 0) {
-            throw new Error('La publicación ya existe.');
-        } else {
-            await conexion.query(
-                'INSERT INTO publicaciones (usuario_id, titulo, contenido, tipo, imagen, video) VALUES (?, ?, ?, ?, ?, ?)',
-                [usuario_id, titulo, contenido, tipo, imagen, video]
-            );
-        }
     } catch (error) {
         console.error('Error al crear la publicación:', error);
         throw error;
