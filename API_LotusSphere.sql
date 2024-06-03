@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS perfiles (
 CREATE TABLE IF NOT EXISTS publicaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
+    titulo VARCHAR(255),
     tipo ENUM('texto', 'imagen', 'video', 'mixto') NOT NULL,
     contenido TEXT NOT NULL,
     imagen VARCHAR(255),

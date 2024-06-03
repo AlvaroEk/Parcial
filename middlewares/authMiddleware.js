@@ -4,7 +4,8 @@ const bcrypt = require('bcrypt');
 const fs = require('fs');
 
 function verificarToken(req, res, next) {
-    const token = req.headers['authorization'].split(' ')[1];
+    const authHeader = req.headers['authorization'];
+    const token = authHeader['authorization'].split(' ')[1];
     if (!token) {
         return res.status(401).json({ mensaje: 'Acceso denegado. Token no proporcionado.' });
     }

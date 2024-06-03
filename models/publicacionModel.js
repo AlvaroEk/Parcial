@@ -14,12 +14,12 @@ async function getAll() {
 }
 
 // Crear una nueva publicación
-async function crearPublicacion(usuario_id, contenido, tipo, imagen, video) {
+async function crearPublicacion(usuario_id, titulo, contenido, imagen, video) {
     const conexion = await obtenerConexion();
     try {
         await conexion.query(
-            'INSERT INTO publicaciones (usuario_id, contenido, tipo, imagen, video) VALUES (?, ?, ?, ?, ?)',
-            [usuario_id, contenido, tipo, imagen, video]
+            'INSERT INTO publicaciones (usuario_id, titulo, contenido, imagen, video) VALUES (?, ?, ?, ?, ?)',
+            [usuario_id, titulo, contenido, imagen, video]
         );
     } catch (error) {
         console.error('Error al crear la publicación:', error);
@@ -28,6 +28,7 @@ async function crearPublicacion(usuario_id, contenido, tipo, imagen, video) {
         conexion.release();
     }
 }
+
 
 module.exports = {
     getAll,
