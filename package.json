@@ -4,8 +4,9 @@
   "description": "api",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"nodemon server.js\""
+    "sass": "saas styles/sass/style.sass:public/css/styles.css",
+    "sass-watch": "sass --watch styles/sass/style.sass:public/css/styles.css",
+    "start": "concurrently \"npm run sass-watch\" \"nodemon server.js\""
   },
   "author": "Alvaro Lugo",
   "license": "ISC",
