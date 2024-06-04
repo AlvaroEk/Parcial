@@ -25,4 +25,6 @@ router.post('/createNewPost', upload.fields([{ name: 'imagen' }, { name: 'video'
 });
 
 
+router.post('/:id/comentar', publicacionController.agregarComentario);
+
 module.exports = router;

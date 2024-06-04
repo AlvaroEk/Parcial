@@ -4,7 +4,7 @@ const PublicacionServicio = require('../servicio/publicacionServicio');
 async function getPublicaciones(req, res) {
     try {
         console.log('Solicitud recibida para obtener publicaciones');
-        const publicaciones = await PublicacionServicio.getPublicaciones({ limite: 10 });
+        const publicaciones = await PublicacionServicio.getPublicaciones();
         console.log('Publicaciones obtenidas:', publicaciones);
 
         const publicacionesProcesadas = publicaciones.map(pub => {
@@ -35,7 +35,11 @@ async function crearPublicacion(req, res) {
     const imagen = req.files && req.files['imagen'] ? req.files['imagen'][0].buffer : null;
     const video = req.files && req.files['video'] ? req.files['video'][0].buffer : null;
 
-    // Log de depuración para los datos recibidos
+    // Validar usuario_id
+    if (!usuario_id || isNaN(usuario_id)) {
+        return res.status(400).json({ error: 'usuario_id es requerido y debe ser un número válido.' });
+    }
+
     console.log('Datos de la nueva publicación:', {
         usuario_id,
         titulo,
@@ -54,7 +58,30 @@ async function crearPublicacion(req, res) {
     }
 }
 
+async function agregarComentario(req, res) {
+    try {
+        const { usuario_id, comentario } = req.body;
+        const publicacion_id = req.params.id;
+
+        console.log('Datos recibidos:', { usuario_id, publicacion_id, comentario });
+
+        const nuevoComentario = await publicacionesService.agregarComentario({
+            usuario_id,
+            publicacion_id,
+            comentario,
+        });
+
+        res.status(201).json({ message: 'Comentario agregado', comentario: nuevoComentario });
+    } catch (error) {
+        console.error('Error al agregar comentario:', error);
+        res.status(500).json({ message: 'Error al agregar comentario', error: error.message });
+    }
+}
+
+
 module.exports = {
     getPublicaciones,
-    crearPublicacion
+    crearPublicacion,
+    agregarComentario
+
 };

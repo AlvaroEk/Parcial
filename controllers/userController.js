@@ -67,10 +67,27 @@ async function verificarRegistro(email) {
 }
 
 
+async function agregarComentario(req, res) {
+    try {
+        const { usuario_id, comentario } = req.body;
+        const publicacion_id = req.params.id;
+
+        const nuevoComentario = await publicacionesService.agregarComentario({
+            usuario_id,
+            publicacion_id,
+            comentario,
+        });
+
+        res.status(201).json({ message: 'Comentario agregado', comentario: nuevoComentario });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al agregar comentario', error });
+    }
+}
 
 module.exports = {
     registrarUsuario,
     logearUsuario,
     obtenerUsuarioPorNombre,
-    verificarRegistro
+    verificarRegistro,
+    agregarComentario
 };

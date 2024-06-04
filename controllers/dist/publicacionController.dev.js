@@ -12,9 +12,7 @@ function getPublicaciones(req, res) {
           _context.prev = 0;
           console.log('Solicitud recibida para obtener publicaciones');
           _context.next = 4;
-          return regeneratorRuntime.awrap(PublicacionServicio.getPublicaciones({
-            limite: 10
-          }));
+          return regeneratorRuntime.awrap(PublicacionServicio.getPublicaciones());
 
         case 4:
           publicaciones = _context.sent;
@@ -64,8 +62,18 @@ function crearPublicacion(req, res) {
           console.log('Llamada a crearPublicacion');
           _req$body = req.body, usuario_id = _req$body.usuario_id, titulo = _req$body.titulo, contenido = _req$body.contenido;
           imagen = req.files && req.files['imagen'] ? req.files['imagen'][0].buffer : null;
-          video = req.files && req.files['video'] ? req.files['video'][0].buffer : null; // Log de depuración para los datos recibidos
+          video = req.files && req.files['video'] ? req.files['video'][0].buffer : null; // Validar usuario_id
 
+          if (!(!usuario_id || isNaN(usuario_id))) {
+            _context2.next = 6;
+            break;
+          }
+
+          return _context2.abrupt("return", res.status(400).json({
+            error: 'usuario_id es requerido y debe ser un número válido.'
+          }));
+
+        case 6:
           console.log('Datos de la nueva publicación:', {
             usuario_id: usuario_id,
             titulo: titulo,
@@ -73,32 +81,32 @@ function crearPublicacion(req, res) {
             imagen: imagen ? 'Imagen recibida' : 'Sin imagen',
             video: video ? 'Video recibido' : 'Sin video'
           });
-          _context2.prev = 5;
-          _context2.next = 8;
+          _context2.prev = 7;
+          _context2.next = 10;
           return regeneratorRuntime.awrap(PublicacionServicio.crearPublicacion(usuario_id, titulo, contenido, imagen, video));
 
-        case 8:
+        case 10:
           console.log('Publicación creada exitosamente');
           res.status(201).json({
             message: 'Publicación creada exitosamente'
           });
-          _context2.next = 16;
+          _context2.next = 18;
           break;
 
-        case 12:
-          _context2.prev = 12;
-          _context2.t0 = _context2["catch"](5);
+        case 14:
+          _context2.prev = 14;
+          _context2.t0 = _context2["catch"](7);
           console.error('Error al crear publicación:', _context2.t0);
           res.status(500).json({
             error: 'Error al crear publicación'
           });
 
-        case 16:
+        case 18:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[5, 12]]);
+  }, null, null, [[7, 14]]);
 }
 
 module.exports = {

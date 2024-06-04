@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const PublicacionServicio = require('./servicio/publicacionServicio');
 
 const app = express();
 
@@ -9,6 +10,45 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
+
+app.get('/publicaciones/imagen/:id', async (req, res) => {
+  try {
+      const id = req.params.id;
+      const imagen = await PublicacionServicio.getImagenPorId(id);
+      if (imagen) {
+          // Asumiendo que la imagen es un buffer y que es tipo JPEG
+          res.writeHead(200, {
+              'Content-Type': 'image/jpeg',
+              'Content-Length': imagen.length
+          });
+          res.end(imagen);
+      } else {
+          res.status(404).send('Imagen no encontrada');
+      }
+  } catch (error) {
+      console.error('Error al obtener la imagen:', error);
+      res.status(500).send('Error interno del servidor');
+  }
+});
+
+app.get('/publicaciones/video/:id', async (req, res) => {
+  try {
+      const id = req.params.id;
+      const video = await PublicacionServicio.getVideoPorId(id);
+      if (video) {
+          res.writeHead(200, {
+              'Content-Type': 'video/mp4', // Ajusta según el formato de tus vídeos
+              'Content-Length': video.length
+          });
+          res.end(video);
+      } else {
+          res.status(404).send('Video no encontrado');
+      }
+  } catch (error) {
+      console.error('Error al obtener el video:', error);
+      res.status(500).send('Error interno del servidor');
+  }
+});
 
 // Configuración del motor de plantillas Pug
 app.set('view engine', 'pug');
